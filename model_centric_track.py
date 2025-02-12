@@ -3,63 +3,87 @@ import tensorflow_model_optimization as tfmot #for Post Training Quantization (P
 from datasets import load_dataset #for downloading the Wake Vision Dataset
 import tensorflow as tf #for designing and training the model 
 
-model_name = 'wv_k_8_c_5'
+model_name = 'wv_k_8_c_5_v4'
 
 #some hyperparameters 
 #Play with them!
-input_shape = (50,50,3)
-batch_size = 512
+input_shape = (80,80,3)
+batch_size = 256
 learning_rate = 0.001
-epochs = 100
+epochs = 10
 
-#model architecture (with Quantization Aware Training - QAT)
-#Play with it!
-inputs = keras.Input(shape=input_shape)
-#
-x = keras.layers.Conv2D(8, (3,3), padding='same')(inputs)
-x = keras.layers.BatchNormalization()(x)
-x = keras.layers.ReLU()(x)
-#
-x = keras.layers.MaxPooling2D((2,2))(x)
-x = keras.layers.Conv2D(16, (3,3), padding='same')(x)
-x = keras.layers.BatchNormalization()(x)
-x = keras.layers.ReLU()(x)
-#
-x = keras.layers.MaxPooling2D((2,2))(x)
-x = keras.layers.Conv2D(24, (3,3), padding='same')(x)
-x = keras.layers.BatchNormalization()(x)
-x = keras.layers.ReLU()(x)
-#
-x = keras.layers.MaxPooling2D((2,2))(x)
-x = keras.layers.Conv2D(30, (3,3), padding='same')(x)
-x = keras.layers.BatchNormalization()(x)
-x = keras.layers.ReLU()(x)
-#
-x = keras.layers.MaxPooling2D((2,2))(x)
-x = keras.layers.Conv2D(34, (3,3), padding='same')(x)
-x = keras.layers.BatchNormalization()(x)
-x = keras.layers.ReLU()(x)
-#
-x = keras.layers.MaxPooling2D((2,2))(x)
-x = keras.layers.Conv2D(37, (3,3), padding='same')(x)
-x = keras.layers.BatchNormalization()(x)
-x = keras.layers.ReLU()(x)
-#
-x = keras.layers.GlobalAveragePooling2D()(x)
-#
-x = keras.layers.Dense(37)(x)
-x = keras.layers.BatchNormalization()(x)
-x = keras.layers.ReLU()(x)
-#
-outputs = keras.layers.Dense(2)(x)
+# #model architecture (with Quantization Aware Training - QAT)
+# #Play with it!
+def build_qat_mobilenetv2(input_shape=input_shape, num_classes=2):
+    inputs = keras.Input(shape=input_shape)
 
-model = keras.Model(inputs, outputs)
+    
+    x = keras.layers.Conv2D(32, kernel_size=3, strides=2, padding="same", use_bias=False)(inputs)
+    x = keras.layers.BatchNormalization()(x)
+    x = keras.layers.ReLU(6.0)(x)
+
+    
+    def inverted_residual_block(x, in_channels, out_channels, expand_channels=0, stride=1):
+
+        residual = x 
+
+        if expand_channels:
+            x = keras.layers.Conv2D(expand_channels, kernel_size=1, use_bias=False)(x)
+            x = keras.layers.BatchNormalization()(x)
+            x = keras.layers.ReLU(6.0)(x)
+
+        x = keras.layers.DepthwiseConv2D(kernel_size=3, strides=stride, padding="same", use_bias=False)(x)
+        x = keras.layers.BatchNormalization()(x)
+        x = keras.layers.ReLU(6.0)(x)
+
+        x = keras.layers.Conv2D(out_channels, kernel_size=1, use_bias=False)(x)
+        x = keras.layers.BatchNormalization()(x)
+
+        # *ADD SKIP CONNECTION*
+        if stride == 1 and in_channels == out_channels:
+            x = keras.layers.Add()([x, residual])  
+
+        return x
+
+    x = inverted_residual_block(x, 32, 16, stride=1)
+    x = inverted_residual_block(x, 16, 24, 3, stride=2)
+    x = inverted_residual_block(x, 24, 24, 5, stride=1)
+    x = inverted_residual_block(x, 24, 32, 5, stride=2)
+    x = inverted_residual_block(x, 32, 32, 7, stride=1)
+    x = inverted_residual_block(x, 32, 32, 7, stride=1)
+    x = inverted_residual_block(x, 32, 64, 7, stride=2)
+    x = inverted_residual_block(x, 64, 64, 15, stride=1)
+    x = inverted_residual_block(x, 64, 64, 15, stride=1)
+    x = inverted_residual_block(x, 64, 64, 15, stride=1)
+    x = inverted_residual_block(x, 64, 96, 15, stride=1)
+    x = inverted_residual_block(x, 96, 96, 23, stride=1)
+    x = inverted_residual_block(x, 96, 96, 23, stride=1)
+    x = inverted_residual_block(x, 96, 160, 23, stride=2)
+    x = inverted_residual_block(x, 160, 160, 28, stride=1)
+    x = inverted_residual_block(x, 160, 160, 28, stride=1)
+    x = inverted_residual_block(x, 160, 3, 9, stride=1)
+
+    
+    x = keras.layers.Conv2D(38, kernel_size=1, use_bias=False)(x)
+    x = keras.layers.BatchNormalization()(x)
+    x = keras.layers.ReLU(6.0)(x)
+
+    
+    x = keras.layers.GlobalAveragePooling2D()(x)
+    x = keras.layers.Dropout(0.2)(x)
+    outputs = keras.layers.Dense(num_classes)(x)  
+
+    model = keras.Model(inputs, outputs)
+    return model
+
+
+model = build_qat_mobilenetv2()
 
 #compile model
 opt = tf.keras.optimizers.Adam(learning_rate=learning_rate)
 
 model.compile(
-    optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
+    optimizer=opt,
     loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
     metrics=[tf.keras.metrics.SparseCategoricalAccuracy()],
 )
