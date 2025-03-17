@@ -1,3 +1,40 @@
+# 🏆 **Efficient Extra Tiny MobileNetV2 for Wake Vision Challenge**
+
+
+This repository presents my solution for the **Model-Centric Track** of the **Wake Vision Challenge**, where I designed an efficient and compact model for **human presence detection in images**.
+
+### 🏗 **The Approach**
+My solution is based on a structurally **pruned version of MobileNetV2**, optimized to **minimize Multiply-Accumulate Operations (MACs) and reduce the number of parameters**. The pruning methodology follows the approach introduced in our recently accepted paper at the **IEEE International Conference on Communications (IEEE ICC)** (see figure below).
+
+Since our pruning framework was originally developed for PyTorch, but this challenge required a TensorFlow implementation, I first **applied our pruning algorithm to MobileNetV2 in PyTorch**. After obtaining the pruned model, I **manually reconstructed its TensorFlow counterpart** to ensure compatibility with the competition’s pipeline.
+
+### ✂ **Pruning Methodology**
+The algorithm prunes each block of layers to its **maximum extent**, then measures the corresponding reduction in MACs and parameters. MobileNetV2 blocks consist of **inverted residual structures** with depthwise and pointwise convolutions. To achieve aggressive pruning, we **retain only a single channel per layer** within each block.
+
+<p align="center">
+  <img src="images/pruning_methodology.png" alt="Pruning Methodology" width="300">
+</p>
+
+
+This process provides an **estimated importance score** for each block, which determines a **unique pruning ratio** per block. The final model undergoes **non-uniform structured pruning**, ensuring that **critical layers retain more parameters while others are pruned more aggressively**.
+
+### 🤖 **Why MobileNetV2?**
+MobileNetV2\_0.25 was already a strong baseline for this task, featuring a **uniform 25% channel reduction across all layers**. However, I believed that some layers were **more critical than others**, requiring more than 25% retention. To address this, I applied **non-uniform structured pruning**, prioritizing essential layers while significantly reducing the model size.
+
+### 🎯 **Further Optimization**
+To further **reduce MACs**, I **downsampled the input size** from the standard **(224, 224, 3) to (80, 80, 3)**, enhancing efficiency without compromising performance.
+
+#### **📊 Model Performance**
+| Flash [B] | RAM [B] | MACs | Deployability | Test Acc. | Norm. Test Acc. | Score |
+|-----------|--------|--------|---------------|-----------|----------------|-------|
+| 55392     | 61968  | 3887331 | 0.8           | 0.75      | 0.94           | 0.78  |
+
+
+### 🏅 **Competition Results**
+This solution achieved **4th place** in the **Wake Vision Challenge**. More details about the challenge can be found [here](https://edgeai.modelnova.ai/challenges/details/challenge-edge:-wake-vision).
+
+---
+
 # 🚀 **Model-Centric Track**
 
 Welcome to the **Model-Centric Track** of the **Wake Vision Challenge**! 🎉
