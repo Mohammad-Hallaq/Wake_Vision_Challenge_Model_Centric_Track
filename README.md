@@ -33,6 +33,42 @@ To further **reduce MACs**, I **downsampled the input size** from the standard *
 ### 🏅 **Competition Results**
 This solution achieved **4th place** in the **Wake Vision Challenge**. More details about the challenge can be found [here](https://edgeai.modelnova.ai/challenges/details/challenge-edge:-wake-vision).
 
+
+### 🔌 **Model Deployment**
+
+After designing an efficient and high-performing model, I deployed it on the **OpenMV H7 microcontroller board** ([GitHub repo](https://github.com/openmv/openmv.git)).
+
+<p align="center">
+  <img src="images/board.jpg" alt="OpenMV Board" width="300">
+</p>
+
+To facilitate deployment, I used the [**Edge Impulse Python SDK**](https://docs.edgeimpulse.com/docs/tools/edge-impulse-python-sdk), which streamlined the process of converting and flashing the model onto the board.
+
+For visual feedback, I utilized the onboard LED:
+- **Green** indicates **human presence detected**
+- **Red** indicates **no presence detected**
+
+As demonstrated below, the LED turns **green** when I am visible in the frame, and **red** when my body is obscured:
+
+<p align="center">
+  <img src="images/green_me.png" alt="LED Green - Person Detected" width="300">
+</p>
+
+<p align="center">
+  <img src="images/red_me.png" alt="LED Red - No Person Detected" width="300">
+</p>
+
+The model also demonstrates strong performance in crowded or complex scenes. For instance, it successfully detects my labmate in the following examples:
+
+<p align="center">
+  <img src="images/omar1.png" alt="Detection in Crowded Scene - 1" width="300">
+</p>
+
+<p align="center">
+  <img src="images/omar2.png" alt="Detection in Crowded Scene - 2" width="300">
+</p>
+
+
 ---
 
 # 🚀 **Model-Centric Track**
