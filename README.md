@@ -48,17 +48,33 @@ For visual feedback, I utilized the onboard LED:
 - **Green** indicates **human presence detected**
 - **Red** indicates **no presence detected**
 
-As demonstrated below, the LED turns **green** when I am visible in the frame, and **red** when my body is obscured:
+As demonstrated below, the LED turns **green** when I am visible in the frame:
+
 
 <p align="center">
-  <img src="images/green_me.png" alt="LED Green - Person Detected" width="300">
+  <img src="images/green_me.png" alt="LED Green - Person Detected" width="700">
 </p>
 
 <p align="center">
-  <img src="images/red_me.png" alt="LED Red - No Person Detected" width="300">
+  <img src="images/green_me_2.png" alt="LED Red - Person Detected" width="700">
 </p>
 
-The model also demonstrates strong performance in crowded or complex scenes. For instance, it successfully detects my labmate in the following examples:
+
+And it turns **red** when my body is obscured or when there is no person in the frame:
+
+<p align="center">
+  <img src="images/red_me.png" alt="LED Red - No Person Detected" width="700">
+</p>
+
+<p align="center">
+  <img src="images/red_me_2.png" alt="LED Red - No Person Detected" width="700">
+</p>
+
+<p align="center">
+  <img src="images/red_me_3.png" alt="LED Red - No Person Detected" width="700">
+</p>
+
+<!-- The model also demonstrates strong performance in crowded or complex scenes. For instance, it successfully detects my labmate in the following examples:
 
 <p align="center">
   <img src="images/omar1.png" alt="Detection in Crowded Scene - 1" width="300">
@@ -66,7 +82,7 @@ The model also demonstrates strong performance in crowded or complex scenes. For
 
 <p align="center">
   <img src="images/omar2.png" alt="Detection in Crowded Scene - 2" width="300">
-</p>
+</p> -->
 
 
 ---
